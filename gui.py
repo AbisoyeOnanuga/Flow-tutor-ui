@@ -64,7 +64,7 @@ def ui_info():
 
 def ui_api_key():
 	if ss['community_user']:
-		st.write('## 1. Optional - enter your AI API key')
+		st.write('## Optional - enter your AI API key')
 		t1,t2 = st.tabs(['community version','enter your own API key'])
 		with t1:
 			pct = ()
@@ -77,15 +77,15 @@ def ui_api_key():
 		with t2:
 			st.text_input('AI API key', type='password', key='api_key', on_change=on_api_key_change, label_visibility="collapsed")
 	else:
-		st.write('## 1. Enter your AI API key')
+		st.write('## Enter your AI API key')
 		st.text_input('AI API key', type='password', key='api_key', on_change=on_api_key_change, label_visibility="collapsed")
 
 def ui_pdf_file():
-	st.write('## 2. Upload or select your PDF file')
+	st.write('## Upload or select your PDF file')
 	disabled = not ss.get('user') or (not ss.get('api_key') and not ss.get('community_pct',0))
 	t1,t2 = st.tabs(['UPLOAD','SELECT'])
 	with t1:
-		st.file_uploader('pdf file', type='pdf', key='pdf_file', disabled=disabled, label_visibility="collapsed")
+		st.file_uploader('pdf file', type='pdf', key='pdf_file', label_visibility="collapsed")
 		b_save()
 	with t2:
 		filenames = ['']
@@ -105,28 +105,38 @@ def ui_pdf_file():
 			else:
 				#ss['index'] = {}
 				pass
-		st.selectbox('select file', filenames, on_change=on_change, key='selected_file', label_visibility="collapsed", disabled=disabled)
+		st.selectbox('select file', filenames, on_change=on_change, key='selected_file', label_visibility="collapsed")
 		b_delete()
 		ss['spin_select_file'] = st.empty()
 
 
 def b_ask():
-	c1,c2,c3,c4,c5 = st.columns([2,1,1,2,2])
-	if c2.button('👍', use_container_width=True, disabled=not ss.get('output')):
+	c2,c3,c4,c5,c6 = st.columns([2,2,2,2,2])
+	c1,c8, c7 = st.columns([1,1,1])
+	if c2.button('😍', use_container_width=True):
+		ss['feedback'].send(+3, ss, details=ss['send_details'])
+		ss['feedback_score'] = ss['feedback'].get_score()
+	if c3.button('😃', use_container_width=True):
+		ss['feedback'].send(+2, ss, details=ss['send_details'])
+		ss['feedback_score'] = ss['feedback'].get_score()
+	if c4.button('🙂', use_container_width=True):
 		ss['feedback'].send(+1, ss, details=ss['send_details'])
 		ss['feedback_score'] = ss['feedback'].get_score()
-	if c3.button('👎', use_container_width=True, disabled=not ss.get('output')):
+	if c5.button('😐', use_container_width=True):
+		ss['feedback'].send(+0, ss, details=ss['send_details'])
+		ss['feedback_score'] = ss['feedback'].get_score()
+	if c6.button('😶', use_container_width=True):
 		ss['feedback'].send(-1, ss, details=ss['send_details'])
 		ss['feedback_score'] = ss['feedback'].get_score()
 	score = ss.get('feedback_score',0)
-	c5.write(f'feedback score: {score}')
-	c4.checkbox('send details', True, key='send_details',
+	c7.write(f'feedback score: {score}')
+	c8.checkbox('send details', True, key='send_details',
 			help='allow question and the answer to be stored in the ask-my-pdf feedback database')
 	#c1,c2,c3 = st.columns([1,3,1])
-	#c2.radio('zzz',['👍',r','👍','👍','👍',...',r'👎'],horizontal=True,label_visibility="collapsed")
+	#c2.radio('zzz',['😶',r','😐',r','🙂','😃',...',r'😍'],horizontal=True,label_visibility="collapsed")
 	#
 	disabled = (not ss.get('api_key') and not ss.get('community_pct',0)) or not ss.get('index')
-	if c1.button('get answer', disabled=disabled, type='primary', use_container_width=True):
+	if c1.button('get answer', type='primary', use_container_width=True):
 		question = ss.get('question','')
 		temperature = ss.get('temperature', 0.0)
 		hyde = ss.get('use_hyde')
@@ -175,16 +185,16 @@ def b_save():
 	api_key = ss.get('api_key')
 	disabled = not api_key or not db or not index or not name
 	help = "The file will be stored for about 90 days. Available only when using your own API key."
-	if st.button('save report on Flow Tutor', disabled=disabled, help=help):
-		with st.spinner('saving to ask-my-pdf'):
+	if st.button('save report on Flow Tutor', help=help):
+		with st.spinner('saving to FlowT utor'):
 			db.put(name, index)
 
 def b_delete():
 	db = ss.get('storage')
 	name = ss.get('selected_file')
 	# TODO: confirm delete
-	if st.button('delete from ask-my-pdf', disabled=not db or not name):
-		with st.spinner('deleting from ask-my-pdf'):
+	if st.button('delete from Flow Tutor'):
+		with st.spinner('deleting from Flow Tutor'):
 			db.delete(name)
 		#st.experimental_rerun()
 
